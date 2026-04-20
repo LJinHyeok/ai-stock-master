@@ -94,33 +94,7 @@ def main():
     with tab2:
         st.header("매크로 인텔리전스 & AI 뉴스 분석")
         
-        # A. AI 뉴스 분석 섹션 (기존 유지)
-        st.subheader("📰 AI 시장 심리 분석")
-        keyword = st.text_input("뉴스 키워드 검색", value="Stock Market OR Economy OR Fed")
-        news_df = macro_news.get_market_news(keyword, max_results=10)
-        
-        if not news_df.empty:
-            if st.button("Gemini AI 수석 전략가 리포트 생성"):
-                with st.spinner("월스트리트 수석 전략가 페르소나로 시장을 분석 중입니다..."):
-                    news_titles = news_df['title'].tolist()
-                    ai_res = macro_news.analyze_sentiment_with_ai(news_titles)
-                    
-                    s_score = ai_res.get('score', 50)
-                    sentiment_kr = ai_res.get('sentiment', 'Neutral').replace("Bullish", "강세").replace("Bearish", "약세").replace("Neutral", "중립")
-
-                    c_score, c_desc, c_news = st.columns([1, 2, 2])
-                    with c_score:
-                        st.metric("시장 공포/탐욕 지수", f"{s_score}/100", delta=sentiment_kr)
-                        st.progress(s_score / 100)
-                    with c_desc:
-                        st.info(f"**Insight:** {ai_res.get('summary', '')}")
-                    with c_news:
-                         with st.expander("전문가 상세 분석 보기"):
-                            st.markdown(ai_res.get('reason', ''))
-        
-        st.divider()
-
-        # B. 확장된 매크로 지표 섹션
+        # 글로벌 거시경제 및 자산 지표 섹션
         st.subheader("📈 글로벌 거시경제 및 자산 지표 (Macro Expert View)")
         st.caption("실시간 데이터를 기반으로 한 10대 핵심 지표 대시보드입니다.")
 
