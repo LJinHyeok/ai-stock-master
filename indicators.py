@@ -34,6 +34,7 @@ def calculate_all_indicators(ticker: str, period: str = "2y", interval: str = "1
     try:
         df['MACD_12_26_9'] = ta.trend.macd(df['Close'], window_slow=26, window_fast=12)
         df['MACDs_12_26_9'] = ta.trend.macd_signal(df['Close'], window_slow=26, window_fast=12, window_sign=9)
+        df['MACDh_12_26_9'] = ta.trend.macd_diff(df['Close'], window_slow=26, window_fast=12, window_sign=9)
     except Exception: pass
 
     # ADX (추세 강도)
