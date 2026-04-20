@@ -15,10 +15,6 @@ st.set_page_config(
 )
 
 def main():
-    st.title("📈 AI Stock Master Pro - 전문가용 시스템")
-    st.caption("Powered by Vibe Coding & Gemini 3 Pro Agent")
-    st.markdown("---")
-
     # 사이드바 설정
     st.sidebar.header("글로벌 설정 (Global Settings)")
     try:
@@ -38,11 +34,10 @@ def main():
     st.sidebar.info("분석할 모듈을 선택하세요.")
     
     # 탭 구성
-    tab1, tab2 = st.tabs(["🌍 매크로 인텔리전스", "🗺️ 시장 역학 지도"])
+    tab1, tab2 = st.tabs(["📊 글로벌 거시경제 및 자산 지표 (Macro Expert View)", "🎯 주요 테마 ETF"])
 
     # 1. 매크로 인텔리전스
     with tab1:
-        st.header("매크로 인텔리전스 & AI 뉴스 분석")
         
         # 글로벌 거시경제 및 자산 지표 대시보드
         st.markdown("### 📊 글로벌 거시경제 및 자산 지표 (Macro Expert View)")
@@ -225,8 +220,6 @@ def main():
 
     # 2. 시장 지도
     with tab2:
-        st.header("S&P 500 섹터 순환매 지도 & 트렌드 (Sector Rotation)")
-        
         col_opt, col_refresh = st.columns([4, 1])
         with col_opt:
             period_opt = st.radio(
