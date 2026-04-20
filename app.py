@@ -94,10 +94,10 @@ def main():
     with tab2:
         st.header("매크로 인텔리전스 & AI 뉴스 분석")
         
-        # 글로벌 거시경제 및 자산 지표 섹션
-        st.subheader("📈 글로벌 거시경제 및 자산 지표 (Macro Expert View)")
-        st.caption("실시간 데이터를 기반으로 한 10대 핵심 지표 대시보드입니다.")
-
+        # 글로벌 거시경제 및 자산 지표 대시보드
+        st.markdown("### 📊 글로벌 거시경제 및 자산 지표 (Macro Expert View)")
+        st.caption("실시간 데이터를 기반으로 한 총 20종 이상의 핵심 거시경제 지표 시각화 대시보드입니다.")
+        
         # 데이터 로드
         fred_df = macro_news.get_fred_data()
         comm_df = macro_news.get_commodities_data()
@@ -106,24 +106,22 @@ def main():
         # m_tab1, m_tab2, m_tab3, m_tab4 = st.tabs(["💰 금리/유동성", "🏭 경기/고용/물가", "🛢️ 원자재/자산", "😱 심리/공포"])
 
         # 3열 그리드 생성 (Dashboard Layout)
-        st.markdown("### 📊 매크로 경제 지표 대시보드 (Global Macro Intelligence)")
-        st.caption("실시간 데이터를 기반으로 한 20대 핵심 지표 대시보드입니다.")
         
         # --- Row 1: 금리 & 채권 & 리스크 ---
         st.markdown("#### 1. 금리 & 채권 & 리스크 (Rates & Bonds)")
         r1c1, r1c2, r1c3 = st.columns(3)
         
         with r1c1: # 장단기 금리차
-            if '10Y-2Y Spread' in fred_df.columns:
-                fig = visualization.plot_macro_chart(fred_df, ['10Y-2Y Spread'], "장단기 금리차 (10Y-2Y)", ['#1f77b4'])
+            if '장단기 금리차 (10Y-2Y)' in fred_df.columns:
+                fig = visualization.plot_macro_chart(fred_df, ['장단기 금리차 (10Y-2Y)'], "장단기 금리차 (10Y-2Y)", ['#1f77b4'])
                 st.plotly_chart(fig, use_container_width=True)
                 g = macro_news.get_macro_interpretation('장단기 금리차 (10Y-2Y)')
                 st.info(f"**{g['meaning']}**\n\n{g['action']}", icon="💡")
         
         with r1c2: # 국채 & 기준금리
              cols_rate = []
-             if '10Y Yield' in fred_df.columns: cols_rate.append('10Y Yield')
-             if 'Fed Funds' in fred_df.columns: cols_rate.append('Fed Funds')
+             if '미국채 10년물 수익률' in fred_df.columns: cols_rate.append('미국채 10년물 수익률')
+             if '기준금리 (Fed Funds)' in fred_df.columns: cols_rate.append('기준금리 (Fed Funds)')
              
              if cols_rate:
                 fig_rate = visualization.plot_macro_chart(fred_df, cols_rate, "국채 10년물 & 기준금리", ['#ff7f0e', '#d62728'])
