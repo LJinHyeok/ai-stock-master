@@ -1,5 +1,4 @@
 from GoogleNews import GoogleNews
-import pandas_datareader.data as web
 import yfinance as yf
 import datetime
 import pandas as pd
@@ -122,10 +121,26 @@ def get_fred_data() -> pd.DataFrame:
     
     for code, name in indicators.items():
         try:
-            # 개별 시도
-            d = web.DataReader(code, "fred", start, end)
+            # 개별 시도: FRED public API csv
+            url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={code}"
+            d = pd.read_csv(url, na_values=['.']) 
+            # Convert 'observation_date' to datetime
+            d['observation_date'] = pd.to_datetime(d['observation_date'], errors='coerce')
+            d.set_index('observation_date', inplace=True)
+            d.index.name = 'Date'
+            
+            # Numeric conversion and dropnas
+            d[code] = pd.to_numeric(d[code], errors='coerce')
+            d = d.dropna(subset=[code])
+            
+            # 기간 필터링
+            d = d.loc[start:end]
+            
+            # 컬럼명 변경
             d.columns = [name]
-            data_frames.append(d)
+            
+            if not d.empty:
+                data_frames.append(d)
         except Exception as e:
             # print(f"Failed to fetch {name} ({code}): {e}") # 로그 과다 방지
             continue

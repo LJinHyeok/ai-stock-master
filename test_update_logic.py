@@ -1,7 +1,6 @@
 from GoogleNews import GoogleNews
-import pandas_datareader.data as web
+import yfinance as yf
 import datetime
-import pandas as pd
 
 def test_news():
     print("--- Testing Google News ---")

@@ -5,6 +5,5 @@ numpy
 plotly
 ta
 googlenews
-pandas-datareader
 python-dotenv
 google-generativeai
