@@ -38,60 +38,10 @@ def main():
     st.sidebar.info("분석할 모듈을 선택하세요.")
     
     # 탭 구성
-    tab1, tab2, tab3 = st.tabs(["📊 종목 정밀 분석", "🌍 매크로 인텔리전스", "🗺️ 시장 역학 지도"])
+    tab1, tab2 = st.tabs(["🌍 매크로 인텔리전스", "🗺️ 시장 역학 지도"])
 
-    # 1. 종목 분석
+    # 1. 매크로 인텔리전스
     with tab1:
-        col_in, col_act = st.columns([3, 1])
-        with col_in:
-            ticker = st.text_input("종목 코드 (Ticker)", value="AAPL", help="분석할 미국 주식 티커를 입력하세요 (예: AAPL, TSLA, NVDA)")
-        with col_act:
-            btn_run = st.button("AI 정밀 분석 실행", use_container_width=True)
-
-        if btn_run or ticker:
-            with st.spinner("퀀트 알고리즘 및 AI 분석 수행 중..."):
-                df = indicators.calculate_all_indicators(ticker, period="2y")
-                
-                if not df.empty:
-                    # 신호 생성
-                    sig = indicators.generate_signal(df)
-                    
-                    # AI Opinion UI
-                    action_map = {"BUY": "매수 (BUY)", "SELL": "매도 (SELL)", "HOLD": "관망 (HOLD)"}
-                    korean_action = action_map.get(sig['action'], sig['action'])
-                    
-                    st.markdown(f"### 🧠 AI 투자 의견: **{korean_action}**")
-                    
-                    # Score Normalize (-10 ~ 10 -> 0 ~ 1.0)
-                    norm_score = (sig['score'] + 10) / 20
-                    norm_score = max(0.0, min(1.0, norm_score))
-                    
-                    st.progress(norm_score)
-                    st.caption(f"퀀트 점수 (Quant Score): {sig['score']} / 10 (높을수록 매수 우위)")
-                    
-                    with st.expander("🔍 상세 분석 근거 (Logic Trace)", expanded=True):
-                        for r in sig['reasons']:
-                            # 간단한 한글 번역 매핑 (필요시 더 정교하게)
-                            trans_r = r.replace("Bullish", "강세").replace("Bearish", "약세").replace("oversold", "과매도").replace("overbought", "과매수")
-                            st.write(f"- {trans_r}")
-                    
-                    st.divider()
-
-                    # Main Chart
-                    st.subheader("기술적 분석 차트 (Technical Analysis)")
-                    fig = visualization.plot_candlestick(df, title=f"{ticker} 주가 움직임")
-                    st.plotly_chart(fig, use_container_width=True)
-                    
-                    # 보조 지표 차트
-                    c1, c2 = st.columns(2)
-                    with c1: st.plotly_chart(visualization.plot_rsi(df), use_container_width=True)
-                    with c2: st.plotly_chart(visualization.plot_macd(df), use_container_width=True)
-                
-                else:
-                    st.error("데이터 로드 실패. 티커를 확인해주세요.")
-
-    # 2. 매크로 인텔리전스
-    with tab2:
         st.header("매크로 인텔리전스 & AI 뉴스 분석")
         
         # 글로벌 거시경제 및 자산 지표 대시보드
@@ -273,8 +223,8 @@ def main():
                  st.info(f"**에너지/산업재:** 경기 회복 시 상승 탄력 (닥터 코퍼)", icon="💡")
 
 
-    # 3. 시장 지도
-    with tab3:
+    # 2. 시장 지도
+    with tab2:
         st.header("S&P 500 섹터 순환매 지도 & 트렌드 (Sector Rotation)")
         
         col_opt, col_refresh = st.columns([4, 1])

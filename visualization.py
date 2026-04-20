@@ -195,22 +195,22 @@ def plot_theme_sparklines(period: str = "1mo"):
     """
     themes = {
         "섹터 (Sectors)": {
-            'XLK': '정보기술', 'XLV': '헬스케어', 'XLF': '금융',
-            'XLC': '커뮤니케이션', 'XLY': '소비순환재', 'XLP': '경기방어주',
-            'XLI': '산업재', 'XLU': '유틸리티', 'XLE': '에너지',
-            'XLRE': '부동산(리츠)', 'XLB': '소재'
+            'XLK': '💻 정보기술', 'XLV': '🏥 헬스케어', 'XLF': '🏦 금융',
+            'XLC': '📱 커뮤니케이션', 'XLY': '🛍️ 소비순환재', 'XLP': '🛒 경기방어주',
+            'XLI': '🏭 산업재', 'XLU': '⚡ 유틸리티', 'XLE': '🛢️ 에너지',
+            'XLRE': '🏢 부동산(리츠)', 'XLB': '🧱 소재'
         },
         "가치/성장 (Value & Growth)": {
-            'VUG': '대형성장', 'IWP': '중형성장', 'VTV': '대형가치', 'VOE': '중형가치'
+            'VUG': '📈 대형성장', 'IWP': '🌱 중형성장', 'VTV': '🏛️ 대형가치', 'VOE': '🏢 중형가치'
         },
         "성장 (Tech Themes)": {
-            'SOXX': '반도체', 'SKYY': '클라우드', 'AIQ': '인공지능', 'CIBR': '사이버보안'
+            'SOXX': '🖥️ 반도체', 'SKYY': '☁️ 클라우드', 'AIQ': '🤖 인공지능', 'CIBR': '🛡️ 사이버보안'
         },
         "배당 (Dividends)": {
-            'VIG': '기술배당', 'SCHD': '배당성장', 'VNQ': '리츠', 'JEPQ': '커버드콜'
+            'VIG': '💰 기술배당', 'SCHD': '💵 배당성장', 'VNQ': '🏙️ 리츠', 'JEPQ': '💸 커버드콜'
         },
         "혁신 (Innovation)": {
-            'BOTZ': '로봇', 'URA': '원전', 'IBIT': '비트코인', 'ARKK': '혁신'
+            'BOTZ': '🦾 로봇', 'URA': '☢️ 원전', 'IBIT': '🪙 비트코인', 'ARKK': '🚀 혁신'
         }
     }
     
@@ -275,16 +275,16 @@ def plot_theme_sparklines(period: str = "1mo"):
                     
                     fig.add_annotation(
                         x=0.01, y=0.5, xref=x_domain_ref, yref=y_domain_ref,
-                        text=f"<b>{name_ko}</b> <span style='font-size:10px; color:gray;'>{ticker}</span>",
+                        text=f"<b>{name_ko}</b> <span style='font-size:12px; color:gray;'>{ticker}</span>",
                         showarrow=False, xanchor="left", yanchor="middle",
-                        font=dict(size=13)
+                        font=dict(size=16)
                     )
                     
                     fig.add_annotation(
                         x=0.99, y=0.5, xref=x_domain_ref, yref=y_domain_ref,
                         text=f"<b>${end_val:.2f}</b>  <span style='color:{line_color};'><b>{pct_change:+.1f}%</b></span>",
                         showarrow=False, xanchor="right", yanchor="middle",
-                        font=dict(size=13)
+                        font=dict(size=16)
                     )
                     
                     min_y, max_y = series.min(), series.max()
@@ -297,10 +297,10 @@ def plot_theme_sparklines(period: str = "1mo"):
                 
                 row += 1
             
-            height = rows * 45 + 50 # Calculate responsive height
+            height = rows * 55 + 50 # Calculate responsive height
             fig.update_layout(
                 height=height,
-                title=dict(text=f"<b>■ {theme_name}</b>", font=dict(size=16)),
+                title=dict(text=f"<b>■ {theme_name}</b>", font=dict(size=20)),
                 margin=dict(l=5, r=5, t=40, b=5),
                 showlegend=False,
                 paper_bgcolor='rgba(0,0,0,0)',
