@@ -301,11 +301,41 @@ def main():
 
         st.divider()
 
-        # B. 스파크라인 그리드
-        st.subheader(f"2. 섹터별 상세 트렌드 차트 ({period_opt})")
-        with st.spinner("트렌드 차트 생성 중..."):
-            fig_grid = visualization.plot_sparkline_grid(period=period_val)
-            st.plotly_chart(fig_grid, use_container_width=True)
+        # B. 스파크라인 테마 (Barometer)
+        st.subheader(f"2. 테마 ETF 트렌드 및 지표 ({period_opt})")
+        with st.spinner("테마별 데이터 분석 및 차트 생성 중..."):
+            theme_figs = visualization.plot_theme_sparklines(period=period_val)
+            
+            if theme_figs:
+                # 스크린샷과 유사한 분할 레이아웃
+                # Left: 섹터 (11개) | Right: 나머지 테마 (4개씩 2x2 배열)
+                col_left, col_right = st.columns([1.2, 2.0])
+                
+                with col_left:
+                    # 좌측 전체 (섹터)
+                    if "섹터 (Sectors)" in theme_figs:
+                        st.plotly_chart(theme_figs["섹터 (Sectors)"], use_container_width=True, config={'displayModeBar': False})
+                
+                with col_right:
+                    # 우측 상단 (가치/성장, 성장)
+                    r1c1, r1c2 = st.columns(2)
+                    with r1c1:
+                        if "가치/성장 (Value & Growth)" in theme_figs:
+                            st.plotly_chart(theme_figs["가치/성장 (Value & Growth)"], use_container_width=True, config={'displayModeBar': False})
+                    with r1c2:
+                        if "성장 (Tech Themes)" in theme_figs:
+                            st.plotly_chart(theme_figs["성장 (Tech Themes)"], use_container_width=True, config={'displayModeBar': False})
+                    
+                    st.divider() # 살짝 구분선
+                    
+                    # 우측 하단 (배당, 혁신)
+                    r2c1, r2c2 = st.columns(2)
+                    with r2c1:
+                        if "배당 (Dividends)" in theme_figs:
+                            st.plotly_chart(theme_figs["배당 (Dividends)"], use_container_width=True, config={'displayModeBar': False})
+                    with r2c2:
+                        if "혁신 (Innovation)" in theme_figs:
+                            st.plotly_chart(theme_figs["혁신 (Innovation)"], use_container_width=True, config={'displayModeBar': False})
 
 if __name__ == "__main__":
     main()

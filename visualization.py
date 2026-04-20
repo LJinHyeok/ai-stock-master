@@ -188,18 +188,38 @@ def plot_sector_treemap(period: str = "5d"):
         print(f"Treemap error: {e}")
         return go.Figure()
 
-def plot_sparkline_grid(period: str = "1mo"):
+def plot_theme_sparklines(period: str = "1mo"):
     """
-    주요 섹터의 미니 차트 그리드 (Tiles with Charts)
-    각 섹터를 '카드' 형태로 표현하고, 배경색으로 등락을 표현합니다.
+    주요 테마별 ETF의 미니 스파크라인 차트트
+    섹터, 가치/성장, 성장(테마), 배당, 혁신 그룹으로 분리하여 각각 Subplot Figure 생성성
     """
-    sectors = {
-        'XLK': '기술', 'XLV': '헬스케어', 'XLF': '금융',
-        'XLY': '임의소비재', 'XLP': '필수소비재', 'XLE': '에너지',
-        'XLI': '산업재', 'XLC': '커뮤니케이션', 'XLB': '소재',
-        'XLRE': '부동산', 'XLU': '유틸리티'
+    themes = {
+        "섹터 (Sectors)": {
+            'XLK': '정보기술', 'XLV': '헬스케어', 'XLF': '금융',
+            'XLC': '커뮤니케이션', 'XLY': '소비순환재', 'XLP': '경기방어주',
+            'XLI': '산업재', 'XLU': '유틸리티', 'XLE': '에너지',
+            'XLRE': '부동산(리츠)', 'XLB': '소재'
+        },
+        "가치/성장 (Value & Growth)": {
+            'VUG': '대형성장', 'IWP': '중형성장', 'VTV': '대형가치', 'VOE': '중형가치'
+        },
+        "성장 (Tech Themes)": {
+            'SOXX': '반도체', 'SKYY': '클라우드', 'AIQ': '인공지능', 'CIBR': '사이버보안'
+        },
+        "배당 (Dividends)": {
+            'VIG': '기술배당', 'SCHD': '배당성장', 'VNQ': '리츠', 'JEPQ': '커버드콜'
+        },
+        "혁신 (Innovation)": {
+            'BOTZ': '로봇', 'URA': '원전', 'IBIT': '비트코인', 'ARKK': '혁신'
+        }
     }
-    tickers = list(sectors.keys())
+    
+    # Collect all tickers
+    all_tickers = []
+    for t_dict in themes.values():
+        all_tickers.extend(list(t_dict.keys()))
+        
+    all_tickers = list(set(all_tickers))
     
     # Period Mapping
     yf_p = "3mo"
@@ -209,87 +229,90 @@ def plot_sparkline_grid(period: str = "1mo"):
     elif period == "1y" or period == "ytd": yf_p = "1y"
 
     try:
-        df = yf.download(tickers, period=yf_p, progress=False)['Close']
-        if df.empty: return go.Figure()
+        df = yf.download(all_tickers, period=yf_p, progress=False)['Close']
+        if df.empty: return {}
         
-        # Subplots (Grid 4x3)
-        fig = make_subplots(
-            rows=4, cols=3, 
-            subplot_titles=[f"{t} ({sectors[t]})" for t in tickers],
-            vertical_spacing=0.1,
-            horizontal_spacing=0.05
-        )
-        
-        row, col = 1, 1
-        for ticker in tickers:
-            if ticker in df.columns:
-                series = df[ticker].dropna()
-                if series.empty: continue
+        figs = {}
+        for theme_name, tickers_dict in themes.items():
+            tickers = list(tickers_dict.keys())
+            rows = len(tickers)
+            
+            fig = make_subplots(
+                rows=rows, cols=1,
+                vertical_spacing=0.03
+            )
+            
+            row = 1
+            for ticker in tickers:
+                if ticker in df.columns:
+                    series = df[ticker].dropna()
+                    if series.empty: continue
+                    
+                    start_val = series.iloc[0]
+                    end_val = series.iloc[-1]
+                    pct_change = ((end_val - start_val) / start_val) * 100
+                    
+                    line_color = '#d62728' if pct_change < 0 else '#2ca02c' 
+                    bg_color = 'rgba(214, 39, 40, 0.2)' if pct_change < 0 else 'rgba(44, 160, 44, 0.2)'
+                    
+                    fig.add_trace(
+                        go.Scatter(
+                            x=series.index, y=series.values,
+                            mode='lines',
+                            line=dict(color=line_color, width=1.5),
+                            fill='tozeroy',
+                            fillcolor=bg_color,
+                            name=ticker
+                        ),
+                        row=row, col=1
+                    )
+                    
+                    # Annotations Using Plotly Subplot Domain Coordinates
+                    x_domain_ref = "x domain" if row == 1 else f"x{row} domain"
+                    y_domain_ref = "y domain" if row == 1 else f"y{row} domain"
 
-                # 등락률 계산
-                start_val = series.iloc[0]
-                end_val = series.iloc[-1]
-                pct_change = ((end_val - start_val) / start_val) * 100
+                    name_ko = tickers_dict[ticker]
+                    
+                    fig.add_annotation(
+                        x=0.01, y=0.5, xref=x_domain_ref, yref=y_domain_ref,
+                        text=f"<b>{name_ko}</b> <span style='font-size:10px; color:gray;'>{ticker}</span>",
+                        showarrow=False, xanchor="left", yanchor="middle",
+                        font=dict(size=13)
+                    )
+                    
+                    fig.add_annotation(
+                        x=0.99, y=0.5, xref=x_domain_ref, yref=y_domain_ref,
+                        text=f"<b>${end_val:.2f}</b>  <span style='color:{line_color};'><b>{pct_change:+.1f}%</b></span>",
+                        showarrow=False, xanchor="right", yanchor="middle",
+                        font=dict(size=13)
+                    )
+                    
+                    min_y, max_y = series.min(), series.max()
+                    margin = (max_y - min_y) * 0.4
+                    # Handle flat charts (e.g. constant price)
+                    if margin == 0: margin = end_val * 0.01
+                        
+                    fig.update_yaxes(range=[min_y - margin, max_y + margin], showgrid=False, showticklabels=False, zeroline=False, row=row, col=1)
+                    fig.update_xaxes(showgrid=False, showticklabels=False, zeroline=False, row=row, col=1)
                 
-                # 색상 결정 (배경색 스타일링을 위해 Annotation 활용 예정)
-                # 차트 선 색상: 상승=진한 초록, 하락=진한 빨강
-                # 배경: 상승=연한 초록, 하락=연한 빨강 (Plotly shape로 구현)
-                
-                line_color = '#006400' if pct_change >= 0 else '#8B0000' # Dark Green / Dark Red
-                bg_color = 'rgba(144, 238, 144, 0.3)' if pct_change >= 0 else 'rgba(255, 182, 193, 0.3)' # Light Green / Light Red
-                
-                # 1. 배경 사각형 추가 (Shape)
-                # Subplot의 Domain을 정확히 알기 어려우므로, 전체 영역에 shape를 추가하는 방식 대신
-                # 차트 영역의 배경색(plot_bgcolor)을 개별 제어하기는 어려움.
-                # 대안: Filled Area Chart로 하단을 채우거나, Annotation으로 박스 그리기.
-                # 여기서는 가독성을 위해 '선 차트 + 영역 채우기'로 타일 느낌 강조.
-                
-                fig.add_trace(
-                    go.Scatter(
-                        x=series.index, y=series.values, 
-                        mode='lines', 
-                        line=dict(color=line_color, width=2),
-                        fill='tozeroy', # 바닥까지 채우기
-                        fillcolor=bg_color, # 연한 배경색
-                        name=ticker
-                    ),
-                    row=row, col=col
-                )
-                
-                # 2. 수치 텍스트 (우측 상단)
-                fig.add_annotation(
-                    x=series.index[-1], y=end_val,
-                    text=f"{end_val:.1f}<br>({pct_change:+.1f}%)",
-                    showarrow=False,
-                    font=dict(color=line_color, size=12, family="Arial Black"),
-                    xanchor="left", yanchor="bottom",
-                    row=row, col=col
-                )
-
-                # Y축 범위 조정 (여백 확보)
-                min_y, max_y = series.min(), series.max()
-                margin = (max_y - min_y) * 0.2
-                fig.update_yaxes(range=[min_y - margin, max_y + margin], row=row, col=col, showticklabels=False, visible=False)
-                fig.update_xaxes(showticklabels=False, visible=False, row=row, col=col)
-
-            col += 1
-            if col > 3:
-                col = 1
                 row += 1
-        
-        fig.update_layout(
-            height=900, 
-            title_text=f"섹터별 상세 트렌드 카드 ({yf_p}) - 배경색: 등락 방향",
-            showlegend=False,
-            paper_bgcolor='rgba(0,0,0,0)', # 투명 배경
-            plot_bgcolor='rgba(0,0,0,0)'
-        )
-        
-        return fig
+            
+            height = rows * 45 + 50 # Calculate responsive height
+            fig.update_layout(
+                height=height,
+                title=dict(text=f"<b>■ {theme_name}</b>", font=dict(size=16)),
+                margin=dict(l=5, r=5, t=40, b=5),
+                showlegend=False,
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)'
+            )
+            figs[theme_name] = fig
+            
+        return figs
 
     except Exception as e:
-        print(f"Sparkline error: {e}")
-        return go.Figure()
+        print(f"Theme sparkline error: {e}")
+        return {}
 
 def plot_macro_chart(df: pd.DataFrame, columns: list, title: str, colors: list = None):
     """
