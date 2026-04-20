@@ -3,7 +3,7 @@ yfinance
 pandas
 numpy
 plotly
-pandas-ta
+ta
 googlenews
 pandas-datareader
 python-dotenv

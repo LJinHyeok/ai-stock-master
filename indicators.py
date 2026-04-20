@@ -5,7 +5,7 @@ import numpy as np
 
 def calculate_all_indicators(ticker: str, period: str = "2y", interval: str = "1d") -> pd.DataFrame:
     """
-    야후 파이낸스 데이터 다운로드 후 보고서 기반의 모든 기술적 지표 कैलकु레이션.
+    야후 파이낸스 데이터 다운로드 후 보고서 기반의 모든 기술적 지표 계산.
     """
     try:
         df = yf.download(ticker, period=period, interval=interval, progress=False)
@@ -15,59 +15,90 @@ def calculate_all_indicators(ticker: str, period: str = "2y", interval: str = "1
         print(f"Error: {e}")
         return pd.DataFrame()
 
+    import ta
+
     # 1. 추세 지표 (Trend)
     # SMA: 5, 20, 50, 60, 120, 200
     for length in [5, 20, 50, 60, 120, 200]:
-        df[f'SMA_{length}'] = ta.sma(df['Close'], length=length)
+        try:
+            df[f'SMA_{length}'] = ta.trend.sma_indicator(df['Close'], window=length)
+        except Exception: pass
     
     # EMA: 12, 26 (MACD용)
-    df['EMA_12'] = ta.ema(df['Close'], length=12)
-    df['EMA_26'] = ta.ema(df['Close'], length=26)
+    try:
+        df['EMA_12'] = ta.trend.ema_indicator(df['Close'], window=12)
+        df['EMA_26'] = ta.trend.ema_indicator(df['Close'], window=26)
+    except Exception: pass
     
     # MACD
-    macd = ta.macd(df['Close'], fast=12, slow=26, signal=9)
-    if macd is not None: df = pd.concat([df, macd], axis=1)
+    try:
+        df['MACD_12_26_9'] = ta.trend.macd(df['Close'], window_slow=26, window_fast=12)
+        df['MACDs_12_26_9'] = ta.trend.macd_signal(df['Close'], window_slow=26, window_fast=12, window_sign=9)
+    except Exception: pass
 
     # ADX (추세 강도)
-    adx = ta.adx(df['High'], df['Low'], df['Close'], length=14)
-    if adx is not None: df = pd.concat([df, adx], axis=1)
+    try:
+        adx = ta.trend.ADXIndicator(df['High'], df['Low'], df['Close'], window=14)
+        df['ADX'] = adx.adx()
+    except Exception: pass
 
     # Ichimoku Cloud
-    ichimoku = ta.ichimoku(df['High'], df['Low'], df['Close'])[0]
-    if ichimoku is not None: df = pd.concat([df, ichimoku], axis=1)
+    try:
+        ichimoku = ta.trend.IchimokuIndicator(df['High'], df['Low'], window1=9, window2=26, window3=52)
+        df['ISA_9'] = ichimoku.ichimoku_a()
+        df['ISB_26'] = ichimoku.ichimoku_b()
+    except Exception: pass
 
-    # ** Parabolic SAR (신규 추가) **
-    # ta.psar returns DataFrame with columns like PSARl_0.02_0.2, PSARs_0.02_0.2
-    psar = ta.psar(df['High'], df['Low'], df['Close'], af=0.02, max_af=0.2)
-    if psar is not None: df = pd.concat([df, psar], axis=1)
+    # ** Parabolic SAR **
+    try:
+        psar = ta.trend.PSARIndicator(df['High'], df['Low'], df['Close'], step=0.02, max_step=0.2)
+        df['PSARl'] = psar.psar_up()
+        df['PSARs'] = psar.psar_down()
+    except Exception: pass
 
     # 2. 모멘텀 지표 (Momentum)
     # RSI
-    df['RSI_14'] = ta.rsi(df['Close'], length=14)
+    try:
+        df['RSI_14'] = ta.momentum.rsi(df['Close'], window=14)
+    except Exception: pass
     
     # Stochastic
-    stoch = ta.stoch(df['High'], df['Low'], df['Close'], k=14, d=3)
-    if stoch is not None: df = pd.concat([df, stoch], axis=1)
+    try:
+        df['STOCHk'] = ta.momentum.stoch(df['High'], df['Low'], df['Close'], window=14, smooth_window=3)
+    except Exception: pass
 
     # CCI
-    df['CCI_14'] = ta.cci(df['High'], df['Low'], df['Close'], length=14)
+    try:
+        df['CCI_14'] = ta.trend.cci(df['High'], df['Low'], df['Close'], window=14)
+    except Exception: pass
     
     # Williams %R
-    df['WillR_14'] = ta.willr(df['High'], df['Low'], df['Close'], length=14)
+    try:
+        df['WillR_14'] = ta.momentum.williams_r(df['High'], df['Low'], df['Close'], lbp=14)
+    except Exception: pass
 
     # 3. 변동성 지표 (Volatility)
     # Bollinger Bands
-    bb = ta.bbands(df['Close'], length=20, std=2)
-    if bb is not None: df = pd.concat([df, bb], axis=1)
+    try:
+        bb = ta.volatility.BollingerBands(close=df['Close'], window=20, window_dev=2)
+        df['BBL_20'] = bb.bollinger_lband()
+        df['BBU_20'] = bb.bollinger_hband()
+    except Exception: pass
     
     # ATR
-    df['ATR_14'] = ta.atr(df['High'], df['Low'], df['Close'], length=14)
+    try:
+        df['ATR_14'] = ta.volatility.average_true_range(df['High'], df['Low'], df['Close'], window=14)
+    except Exception: pass
 
     # 4. 거래량 지표 (Volume)
     # OBV
-    df['OBV'] = ta.obv(df['Close'], df['Volume'])
+    try:
+        df['OBV'] = ta.volume.on_balance_volume(df['Close'], df['Volume'])
+    except Exception: pass
     # MFI
-    df['MFI_14'] = ta.mfi(df['High'], df['Low'], df['Close'], df['Volume'], length=14)
+    try:
+        df['MFI_14'] = ta.volume.money_flow_index(df['High'], df['Low'], df['Close'], df['Volume'], window=14)
+    except Exception: pass
 
     return df
 
