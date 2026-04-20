@@ -241,18 +241,10 @@ def main():
         with col_refresh:
             if st.button("새로고침"): st.cache_data.clear()
         
-        # A. 트리맵
-        st.subheader("1. 섹터 등락률 지도 (Market Map)")
-        with st.spinner(f"S&P 500 섹터별 {period_opt} 데이터 분석 중..."):
-            fig_map = visualization.plot_sector_treemap(period=period_val)
-            st.plotly_chart(fig_map, use_container_width=True)
-            
-        st.info("💡 팁: 초록색은 상승, 빨간색은 하락을 의미합니다. 영역 크기는 동일하게 설정되어 있습니다.")
-
-        st.divider()
-
         # B. 스파크라인 테마 (Barometer)
-        st.subheader(f"2. 테마 ETF 트렌드 및 지표 ({period_opt})")
+        st.markdown(f"## 🎯 <b>주요 테마 ETF 역학 지도</b> <span style='font-size:18px; color:gray;'>({period_opt})</span>", unsafe_allow_html=True)
+        st.caption("5대 핵심 테마별 시장 트렌드와 수익률을 직관적으로 보여주는 ETF 바로미터입니다.")
+        st.write("") # 여백 추가
         with st.spinner("테마별 데이터 분석 및 차트 생성 중..."):
             theme_figs = visualization.plot_theme_sparklines(period=period_val)
             
