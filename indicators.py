@@ -1,6 +1,6 @@
 import yfinance as yf
 import pandas as pd
-import pandas_ta as ta
+import ta
 import numpy as np
 
 def calculate_all_indicators(ticker: str, period: str = "2y", interval: str = "1d") -> pd.DataFrame:
