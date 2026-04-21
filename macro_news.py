@@ -159,7 +159,8 @@ def get_commodities_data() -> pd.DataFrame:
         'CL=F': 'Crude Oil (WTI)',
         'GC=F': 'Gold (COMEX)',
         'HG=F': 'Copper',
-        'BTC-USD': 'Bitcoin'
+        'BTC-USD': 'Bitcoin',
+        '^DJT': 'Dow Jones Transportation'
     }
     try:
         # yfinance는 리스트로 줘도 부분 성공 가능
@@ -246,6 +247,7 @@ def get_macro_interpretation(indicator_name: str) -> dict:
             'meaning': '경기 침체 시작을 알리는 매우 정확한 지표로 알려져 있습니다.',
             'action': '지표 급등 시 적극적 리스크 관리 필요.'
         },
+
         '미국 GDP': {
             'desc': '국내총생산, 국가 경제 규모의 성장률입니다.',
             'meaning': '경제가 성장하고 있는지 후퇴하고 있는지 보여주는 가장 기본적인 성적표입니다.',
@@ -267,9 +269,9 @@ def get_macro_interpretation(indicator_name: str) -> dict:
             'action': '소비 위축 시 경기민감주 주의.'
         },
         '주택 착공 건수': {
-            'desc': '새로 짓기 시작한 주택의 수입니다.',
-            'meaning': '부동산 경기는 경제의 선행 지표입니다. 착공 감소는 향후 가전, 가구 등 소비 감소로 이어집니다.',
-            'action': '건설/자재 섹터와 연동.'
+            'desc': '새로 짓기 시작한 민간 주택의 건수입니다 (FRED: HOUST).',
+            'meaning': '건설업은 거시경제 파급효과가 커서, 최상위 경기 선행 지표 중 하나입니다. 착공 건수 하락 추세는 거시경제 둔화의 전조증상입니다.',
+            'action': '하락 추세 지속 시 건설/자재 섹터 경계.'
         },
         '개인 저축률': {
             'desc': '개인의 가처분 소득 중 저축하는 비율입니다.',
@@ -315,6 +317,16 @@ def get_macro_interpretation(indicator_name: str) -> dict:
             'desc': '대표적인 암호화폐이자 디지털 금입니다.',
             'meaning': '가장 민감한 위험 자산(Risk On) 성격을 가집니다.',
             'action': '유동성이 풍부할 때 가장 탄력적으로 상승합니다.'
+        },
+        'Dow Jones Transportation': {
+            'desc': '미국의 항공, 철도, 해운 등 주요 운송 기업 20개로 구성된 주가지수입니다 (다우 이론 핵심).',
+            'meaning': '가장 강력한 증시 선행 지표입니다. 실물 경제의 물동량 증가(운송)가 선행되어야 증시 호황이 유지됨을 시사합니다.',
+            'action': '운송 지수 하락과 산업 지수 상승의 다이버전스 발생 시 시장 고점 경고.'
+        },
+        'Copper/Gold Ratio': {
+            'desc': '구리 가격을 금 가격으로 나눈 비율입니다 (닥터 코퍼 리스크 온/오프 비율).',
+            'meaning': '대표적인 글로벌 경기 확장/수축 선행 지표이자 국채 10년물 금리의 방향성을 시사합니다. 상승하면 위험 선호 강세(경기 호황), 하락하면 안전자산 쏠림(경기 침체 우려)입니다.',
+            'action': '비율이 장기 이평선을 하향 돌파할 경우 방어적 포트폴리오(국채 및 경기방어주) 구축 고려.'
         }
     }
     return map_dict.get(indicator_name, {
@@ -323,20 +335,3 @@ def get_macro_interpretation(indicator_name: str) -> dict:
         'action': '추세적 변화에 주목하세요.'
     })
 
-def get_commodities_data() -> pd.DataFrame:
-    """[확장] 달러, 원유, 금, 구리, 비트코인"""
-    tickers = {
-        'DX-Y.NYB': 'Dollar Index (DXY)',
-        'CL=F': 'Crude Oil (WTI)',
-        'GC=F': 'Gold (COMEX)',
-        'HG=F': 'Copper',
-        'BTC-USD': 'Bitcoin'
-    }
-    try:
-        # 데이터가 없는 경우를 대비해 yfinance의 경우 에러 핸들링 강화
-        data = yf.download(list(tickers.keys()), period="5y", progress=False)['Close']
-        if isinstance(data.columns, pd.MultiIndex): data.columns = data.columns.get_level_values(0)
-        return data.rename(columns=tickers)
-    except Exception as e:
-        print(f"Comm. Error: {e}")
-        return pd.DataFrame()

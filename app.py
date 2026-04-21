@@ -217,7 +217,36 @@ def main():
                  g = macro_news.get_macro_interpretation('Crude Oil (WTI)')
                  st.info(f"**에너지/산업재:** 경기 회복 시 상승 탄력 (닥터 코퍼)", icon="💡")
 
+        st.divider()
 
+        # --- Row 6: 핵심 선행 지표 (Leading Indicators) ---
+        st.markdown("#### 6. 핵심 선행 지표 (Key Leading Indicators)")
+        st.caption("시장의 추세 전환을 가장 먼저 알려주는 3대 핵심 선행 지표 라인업입니다.")
+        r6c1, r6c2, r6c3 = st.columns(3)
+
+        with r6c1: # 다우 운송수단 지수
+             if 'Dow Jones Transportation' in comm_df.columns:
+                 fig_djt = visualization.plot_macro_chart(comm_df, ['Dow Jones Transportation'], "다우 운송수단 지수", ['#1f77b4'])
+                 st.plotly_chart(fig_djt, use_container_width=True)
+                 g = macro_news.get_macro_interpretation('Dow Jones Transportation')
+                 st.info(f"**{g['meaning']}**\n\n{g['action']}", icon="💡")
+
+        with r6c2: # 구리/금 비율
+             if 'Copper' in comm_df.columns and 'Gold (COMEX)' in comm_df.columns:
+                 # 구리 금 비율 계산 및 DataFrame 생성
+                 cg_ratio = pd.DataFrame()
+                 cg_ratio['Copper/Gold Ratio'] = comm_df['Copper'] / comm_df['Gold (COMEX)']
+                 fig_cg = visualization.plot_macro_chart(cg_ratio, ['Copper/Gold Ratio'], "구리/금 비율 (Risk On/Off)", ['#ff7f0e'])
+                 st.plotly_chart(fig_cg, use_container_width=True)
+                 g = macro_news.get_macro_interpretation('Copper/Gold Ratio')
+                 st.info(f"**{g['meaning']}**\n\n{g['action']}", icon="💡")
+
+        with r6c3: # 주택 착공 건수
+             if '주택 착공 건수' in fred_df.columns:
+                 fig_houst = visualization.plot_macro_chart(fred_df, ['주택 착공 건수'], "미국 주택 착공 건수", ['#2ca02c'])
+                 st.plotly_chart(fig_houst, use_container_width=True)
+                 g = macro_news.get_macro_interpretation('주택 착공 건수')
+                 st.info(f"**{g['meaning']}**\n\n{g['action']}", icon="💡")
     # 2. 시장 지도
     with tab2:
         col_opt, col_refresh = st.columns([4, 1])
